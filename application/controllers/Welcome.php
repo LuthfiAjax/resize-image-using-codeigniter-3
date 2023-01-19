@@ -1,25 +1,47 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Welcome extends CI_Controller {
+class Welcome extends CI_Controller
+{
+	function __construct()
+	{
+		parent::__construct();
+		$this->load->library('upload');
+	}
 
-	/**
-	 * Index Page for this controller.
-	 *
-	 * Maps to the following URL
-	 * 		http://example.com/index.php/welcome
-	 *	- or -
-	 * 		http://example.com/index.php/welcome/index
-	 *	- or -
-	 * Since this controller is set as the default controller in
-	 * config/routes.php, it's displayed at http://example.com/
-	 *
-	 * So any other public methods not prefixed with an underscore will
-	 * map to /index.php/welcome/<method_name>
-	 * @see https://codeigniter.com/userguide3/general/urls.html
-	 */
 	public function index()
 	{
 		$this->load->view('welcome_message');
+	}
+
+	public function upload()
+	{
+		$config['upload_path'] = './assets/images/'; //path folder
+		$config['allowed_types'] = 'gif|jpg|png|jpeg|bmp'; //type yang dapat diakses bisa anda sesuaikan
+		$config['encrypt_name'] = TRUE; //Enkripsi nama yang terupload
+
+		$this->upload->initialize($config);
+
+		if (!empty($_FILES['filefoto']['name'])) {
+
+			if ($this->upload->do_upload('filefoto')) {
+				$gbr = $this->upload->data();
+				//Compress Image
+				$config['image_library'] = 'gd2';
+				$config['source_image'] = './assets/images/' . $gbr['file_name'];
+				$config['create_thumb'] = FALSE;
+				$config['maintain_ratio'] = FALSE;
+				$config['quality'] = '50%';
+				$config['width'] = 600;
+				$config['height'] = 600;
+				$config['new_image'] = './assets/images/' . $gbr['file_name'];
+				$this->load->library('image_lib', $config);
+				$this->image_lib->resize();
+
+				echo "Image berhasil diupload";
+			}
+		} else {
+			echo "Image yang diupload kosong";
+		}
 	}
 }
